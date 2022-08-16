@@ -26,16 +26,27 @@ const repoInfo = <Required<typeof repoInfo_>>repoInfo_; // fix type
 const webhooks = new Webhooks({ secret: WEBHOOK_SECRET });
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-const editRepo = async (starsCount: number) => {
+const editRepo = async (starsCount: number, issuesCount: number) => {
   await octokit.repos.update({
     ...repoInfo,
-    name: `This-repo-has-${starsCount}-stars`,
-    description: `这个仓库有${starsCount}个star，不信你试试`,
+    name: `This-repo-has-${starsCount}-stars-and-${issuesCount}-issues`,
+    description: `This repo has ${starsCount} stars and ${issuesCount} issues`,
   });
 };
 
 webhooks.on('star', ({ payload: { repository } }) => {
-  editRepo(repository.stargazers_count);
+  console.log('event');
+  editRepo(repository.stargazers_count, repository.open_issues_count);
+});
+
+webhooks.on('issues.opened', ({ payload: { repository } }) => {
+  console.log('event');
+  editRepo(repository.stargazers_count, repository.open_issues_count);
+});
+
+webhooks.on('issues.closed', ({ payload: { repository } }) => {
+  console.log('event');
+  editRepo(repository.stargazers_count, repository.open_issues_count);
 });
 
 (async () => {
@@ -44,7 +55,8 @@ webhooks.on('star', ({ payload: { repository } }) => {
 
   console.log('init repo stars count...');
   const { data: repository } = await octokit.repos.get({ ...repoInfo });
-  await editRepo(repository.stargazers_count);
+  //await editRepo(repository.stargazers_count);
+  await editRepo(repository.stargazers_count, repository.open_issues_count);
 
   createServer(createNodeMiddleware(webhooks))
     .on('error', console.error)
@@ -68,3 +80,6 @@ webhooks.on('star', ({ payload: { repository } }) => {
     };
   }
 })();
+
+
+//Зробити щоб назва була в такому форматі: Name [N Start][N Issues]
