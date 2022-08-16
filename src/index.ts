@@ -30,7 +30,7 @@ const editRepo = async (starsCount: number, issuesCount: number) => {
   await octokit.repos.update({
     ...repoInfo,
     name: `This-repo-has-${starsCount}-stars-and-${issuesCount}-issues`,
-    description: `This repo has ${starsCount} stars and ${issuesCount} issues`,
+    description: `This repo has ${starsCount} stars and ${issuesCount} issues.`,
   });
 };
 
